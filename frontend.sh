@@ -1,4 +1,6 @@
 #frontend
+source common.sh
+
 PRINT disable nginx
 dnf module disable nginx -y &>>LOG_FILE
 STAT $?
