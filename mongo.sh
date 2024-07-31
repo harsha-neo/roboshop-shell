@@ -1,6 +1,6 @@
 source common.sh
 
-PRINT copy mongo
+- name: copy mongo
 cp mongo.repo /etc/yum.repos.d/mongo.repo &>>LOG_FILE
 STAT $?
 
