@@ -8,14 +8,52 @@ PRINT() {
   echo $*
 }
 
-STAT () {
+
+STAT() {
   if [ $1 -eq 0 ]; then
     echo -e "\e[32mSUCCESS\e[0m"
   else
     echo -e "\e[31mFAILURE\e[0m"
     echo
-    echo "refer the log file for more information : file path : ${LOG_FILE}"
+    echo "Refer the log file for more information : File Path : ${LOG_FILE}"
     exit $1
-    fi
+  fi
 }
 
+APP_PREREQ() {
+  PRINT Adding Application User
+  id roboshop &>>$LOG_FILE
+  if [ $? -ne 0 ]; then
+    useradd roboshop &>>$LOG_FILE
+  fi
+  STAT $?
+
+  PRINT Remove old content
+  rm -rf ${app_path}  &>>$LOG_FILE
+  STAT $?
+
+  PRINT Create App Directory
+  mkdir ${app_path}  &>>$LOG_FILE
+  STAT $?
+
+  PRINT Download Application Content
+  curl -o /tmp/${component}.zip https://roboshop-artifacts.s3.amazonaws.com/${component}-v3.zip  &>>$LOG_FILE
+  STAT $?
+
+  PRINT Extract Application Content
+  cd ${app_path}
+  unzip /tmp/${component}.zip  &>>$LOG_FILE
+  STAT $?
+}
+
+SYSTEMD_SETUP() {
+    PRINT Copy Service file
+    cp ${code_dir}/${component}.service /etc/systemd/system/${component}.service &>>$LOG_FILE
+    STAT $?
+
+    PRINT Start Service
+    systemctl daemon-reload &>>$LOG_FILE
+    systemctl enable ${component} &>>$LOG_FILE
+    systemctl restart ${component} &>>$LOG_FILE
+    STAT $?
+}
